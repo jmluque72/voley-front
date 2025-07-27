@@ -1,0 +1,42 @@
+// Configuración de la API
+export const API_CONFIG = {
+  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://192.168.68.109:3000/api', // Cambiado el puerto por defecto
+  TIMEOUT: 10000,
+} as const;
+
+// Configuración de autenticación
+export const AUTH_CONFIG = {
+  TOKEN_KEY: import.meta.env.VITE_TOKEN_STORAGE_KEY || 'voley_token',
+  USER_KEY: import.meta.env.VITE_USER_STORAGE_KEY || 'voley_user',
+} as const;
+
+// URLs de endpoints
+export const API_ENDPOINTS = {
+  AUTH: {
+    LOGIN: '/auth/login',
+    REGISTER: '/auth/register',
+    ME: '/users/me',
+  },
+  USERS: '/users',
+  CATEGORIES: '/categories', 
+  PLAYERS: '/players',
+  PAYMENTS: '/payments',
+  STATS: {
+    DASHBOARD: '/stats/dashboard',
+    MONTHLY_INCOME: '/stats/monthly-income',
+  },
+} as const;
+
+// Helper para construir URLs completas
+export const getApiUrl = (endpoint: string): string => {
+  return `${API_CONFIG.BASE_URL}${endpoint}`;
+};
+
+// Debug: Log de la configuración actual (solo en desarrollo)
+if (import.meta.env.DEV) {
+  console.log('🔧 API Configuration:', {
+    BASE_URL: API_CONFIG.BASE_URL,
+    NODE_ENV: import.meta.env.NODE_ENV,
+    VITE_API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
+  });
+} 
