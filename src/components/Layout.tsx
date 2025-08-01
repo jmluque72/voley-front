@@ -13,8 +13,6 @@ import {
   X,
   User,
   Search,
-  Bell,
-  Settings,
   ChevronDown
 } from 'lucide-react';
 
@@ -147,16 +145,6 @@ const Layout: React.FC = () => {
                 <Search className="w-6 h-6" />
               </button>
 
-              {/* Notifications */}
-              <div className="relative">
-                <button className="text-gray-600 hover:text-gray-900 transition-colors relative">
-                  <Bell className="w-6 h-6" />
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    3
-                  </span>
-                </button>
-              </div>
-
               {/* User Profile Dropdown */}
               <div className="relative">
                 <button
@@ -180,16 +168,6 @@ const Layout: React.FC = () => {
                       <p className="text-sm font-medium text-gray-900">{user?.name}</p>
                       <p className="text-sm text-gray-500">{user?.email}</p>
                     </div>
-                    
-                    <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2">
-                      <User className="w-4 h-4" />
-                      <span>Mi Perfil</span>
-                    </button>
-                    
-                    <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2">
-                      <Settings className="w-4 h-4" />
-                      <span>Configuración</span>
-                    </button>
                     
                     <div className="border-t border-gray-100 mt-1">
                       <button

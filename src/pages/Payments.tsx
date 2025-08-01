@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Filter, X, FileText, Download } from 'lucide-react';
+import { Plus, Filter, X, FileText } from 'lucide-react';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { usePayments } from '../hooks/usePayments';
@@ -109,21 +109,10 @@ const Payments: React.FC = () => {
               handleGenerateReceipt(payment);
             }}
             className="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700 transition-colors flex items-center space-x-1"
-            title="Generar recibo PDF"
+            title="Generar recibo"
           >
             <FileText className="w-3 h-3" />
-            <span>PDF</span>
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleGenerateSimpleReceipt(payment);
-            }}
-            className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700 transition-colors flex items-center space-x-1"
-            title="Generar recibo simple"
-          >
-            <Download className="w-3 h-3" />
-            <span>Simple</span>
+            <span>Recibo</span>
           </button>
         </div>
       )
@@ -300,14 +289,7 @@ const Payments: React.FC = () => {
     }
   };
 
-  const handleGenerateSimpleReceipt = (payment: Payment) => {
-    try {
-      receiptService.generateSimpleReceipt(payment);
-      console.log('Recibo simple generado exitosamente');
-    } catch (error) {
-      console.error('Error generando recibo simple:', error);
-    }
-  };
+
 
   const handleGenerateBulkReceipts = () => {
     if (filteredData.length === 0) return;
@@ -345,10 +327,10 @@ const Payments: React.FC = () => {
             <button
               onClick={handleGenerateBulkReceipts}
               className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
-              title="Generar PDF con todos los recibos mostrados"
+              title="Generar recibos con todos los pagos mostrados"
             >
               <FileText className="w-4 h-4" />
-              <span>PDFs ({filteredData.length})</span>
+              <span>Recibos ({filteredData.length})</span>
             </button>
           )}
           <button

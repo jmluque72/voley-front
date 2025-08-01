@@ -1,6 +1,6 @@
 // Configuración de la API
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://192.168.68.109:3000/api', // Cambiado el puerto por defecto
+  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api', // Cambiado a localhost
   TIMEOUT: 10000,
 } as const;
 

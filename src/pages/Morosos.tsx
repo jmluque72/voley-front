@@ -1,147 +1,47 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { AlertTriangle, Calendar, User, CreditCard, Filter, X, RefreshCw } from 'lucide-react';
-import DataTable from '../components/DataTable';
-import { usePlayers } from '../hooks/usePlayers';
-import { usePayments } from '../hooks/usePayments';
-import { useCategories } from '../hooks/useCategories';
+import { useDebtors } from '../hooks/useDebtors';
 
-interface MorosoData {
+interface DebtorMonth {
+  month: number;
+  year: number;
+  monthName: string;
+  amount: number;
+}
+
+interface DebtorData {
   playerId: string;
   playerName: string;
   playerEmail: string;
   category: string;
-  monthsOwed: number;
-  lastPaymentDate: string | null;
+  categoryQuota: number;
+  unpaidMonthsCount: number;
+  unpaidMonths: DebtorMonth[];
   totalOwed: number;
-  owedMonths: Array<{
-    month: number;
-    year: number;
-    amount: number;
-  }>;
+  lastPaymentDate: string | null;
+  lastPaymentMonth: string | null;
+  monthsSinceLastPayment: number | null;
 }
 
 const Morosos: React.FC = () => {
-  const { players, loading: playersLoading } = usePlayers();
-  const { payments, loading: paymentsLoading, getMonthName } = usePayments();
-  const { categories, loading: categoriesLoading } = useCategories();
-  const [morososData, setMorososData] = useState<MorosoData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { debtors, summary, loading, error, refreshDebtors } = useDebtors();
   const [showFilters, setShowFilters] = useState(false);
   const [filterCategory, setFilterCategory] = useState('');
   const [filterMinMonths, setFilterMinMonths] = useState(1);
   const [refreshing, setRefreshing] = useState(false);
 
-  const calculateMorosos = () => {
-    if (!players || !payments || !categories) return;
-    
-    setLoading(true);
-    
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth() + 1;
-    const currentYear = currentDate.getFullYear();
-    
-    console.log('🔍 Calculando morosos para:', { currentMonth, currentYear });
-    console.log('📊 Total payments:', payments.length);
-    
-    const morosos: MorosoData[] = [];
-    
-    players.forEach(player => {
-      const playerPayments = payments.filter(p => p.playerId === player._id);
-      const owedMonths: Array<{ month: number; year: number; amount: number; }> = [];
-      
-      console.log(`👤 Checking player: ${player.firstName} ${player.lastName}`);
-      console.log(`💰 Player payments (${playerPayments.length}):`, playerPayments.map(p => ({ month: p.month, year: p.year })));
-      
-      // Verificar los últimos 12 meses (empezando desde el mes anterior)
-      for (let i = 1; i <= 12; i++) {
-        let checkMonth = currentMonth - i;
-        let checkYear = currentYear;
-        
-        if (checkMonth <= 0) {
-          checkMonth += 12;
-          checkYear -= 1;
-        }
-        
-        console.log(`🔎 Checking month: ${checkMonth}/${checkYear}`);
-        
-        const paymentExists = playerPayments.some(
-          p => p.month === checkMonth && p.year === checkYear
-        );
-        
-        console.log(`💸 Payment exists for ${checkMonth}/${checkYear}:`, paymentExists);
-        
-        if (!paymentExists) {
-          const playerCategory = categories.find(cat => cat._id === player.category._id);
-          const categoryQuota = playerCategory?.cuota || 0;
-          console.log(`❌ Adding owed month: ${checkMonth}/${checkYear} - $${categoryQuota}`);
-          owedMonths.push({
-            month: checkMonth,
-            year: checkYear,
-            amount: categoryQuota
-          });
-        }
-      }
-      
-      if (owedMonths.length > 0) {
-        const lastPayment = playerPayments
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
-        
-        const totalOwed = owedMonths.reduce((sum, month) => sum + month.amount, 0);
-        
-        morosos.push({
-          playerId: player._id,
-          playerName: `${player.firstName} ${player.lastName}`,
-          playerEmail: player.email,
-          category: player.category?.name || 'Sin categoría',
-          monthsOwed: owedMonths.length,
-          lastPaymentDate: lastPayment ? lastPayment.createdAt : null,
-          totalOwed,
-          owedMonths: owedMonths.sort((a, b) => {
-            if (a.year !== b.year) return b.year - a.year;
-            return b.month - a.month;
-          })
-        });
-      }
-    });
-    
-    // Ordenar por cantidad de meses adeudados (descendente)
-    morosos.sort((a, b) => b.monthsOwed - a.monthsOwed);
-    
-    setMorososData(morosos);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    if (!playersLoading && !paymentsLoading && !categoriesLoading && players && payments && categories) {
-      calculateMorosos();
-    }
-  }, [players, payments, categories, playersLoading, paymentsLoading, categoriesLoading]);
-
-  const renderCellValue = (column: any, moroso: MorosoData) => {
-    if (column.render) {
-      return column.render(moroso[column.key as keyof MorosoData], moroso);
-    }
-    const value = moroso[column.key as keyof MorosoData];
-    if (value === null || value === undefined) return '';
-    if (typeof value === 'object') return '';
-    return String(value);
-  };
-
   const handleRefresh = async () => {
     setRefreshing(true);
-    console.log('🔄 Refreshing morosos data...');
+    console.log('🔄 Refreshing debtors data...');
     
-    // Recalculate immediately with current data
-    setTimeout(() => {
-      calculateMorosos();
-      setRefreshing(false);
-      console.log('✅ Morosos data refreshed');
-    }, 500);
+    await refreshDebtors();
+    setRefreshing(false);
+    console.log('✅ Debtors data refreshed');
   };
 
-  const filteredMorosos = morososData.filter(moroso => {
-    if (filterCategory && moroso.category !== filterCategory) return false;
-    if (moroso.monthsOwed < filterMinMonths) return false;
+  const filteredDebtors = debtors.filter(debtor => {
+    if (filterCategory && debtor.category !== filterCategory) return false;
+    if (debtor.unpaidMonthsCount < filterMinMonths) return false;
     return true;
   });
 
@@ -150,19 +50,58 @@ const Morosos: React.FC = () => {
     setFilterMinMonths(1);
   };
 
-  const stats = {
-    totalMorosos: morososData.length,
-    totalOwed: morososData.reduce((sum, m) => sum + m.totalOwed, 0),
-    averageMonthsOwed: morososData.length > 0 
-      ? (morososData.reduce((sum, m) => sum + m.monthsOwed, 0) / morososData.length).toFixed(1)
-      : '0'
+  const getMonthName = (month: number): string => {
+    const months = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    return months[month - 1] || '';
   };
+
+  const renderCellValue = (column: any, debtor: DebtorData) => {
+    if (column.render) {
+      return column.render(debtor[column.key as keyof DebtorData], debtor);
+    }
+    const value = debtor[column.key as keyof DebtorData];
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'object') return '';
+    return String(value);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="flex items-center space-x-2 text-gray-600">
+          <RefreshCw className="w-5 h-5 animate-spin" />
+          <span>Calculando usuarios morosos...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Error al cargar datos</h3>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={handleRefresh}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const columns = [
     {
       key: 'playerName',
       label: 'Jugador',
-      render: (value: string, row: MorosoData) => (
+      render: (value: string, row: DebtorData) => (
         <div>
           <div className="font-medium text-gray-900">{value}</div>
           <div className="text-sm text-gray-500">{row.playerEmail}</div>
@@ -179,8 +118,8 @@ const Morosos: React.FC = () => {
       )
     },
     {
-      key: 'monthsOwed',
-      label: 'Meses Adeudados',
+      key: 'unpaidMonthsCount',
+      label: 'Meses Sin Pagar',
       render: (value: number) => (
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
           value >= 6 ? 'bg-red-100 text-red-800' :
@@ -201,25 +140,25 @@ const Morosos: React.FC = () => {
       )
     },
     {
-      key: 'lastPaymentDate',
+      key: 'lastPaymentMonth',
       label: 'Último Pago',
       render: (value: string | null) => (
         <span className="text-sm text-gray-500">
-          {value ? new Date(value).toLocaleDateString('es-ES') : 'Nunca'}
+          {value || 'Nunca'}
         </span>
       )
     },
     {
-      key: 'owedMonths',
-      label: 'Detalle Meses',
-      render: (value: Array<{ month: number; year: number; amount: number; }>) => (
+      key: 'unpaidMonths',
+      label: 'Meses Sin Pagar',
+      render: (value: DebtorMonth[]) => (
         <div className="flex flex-wrap gap-1">
           {value.slice(0, 3).map((month, index) => (
             <span
               key={index}
               className="inline-flex items-center px-2 py-1 rounded text-xs bg-red-50 text-red-700 border border-red-200"
             >
-              {getMonthName(month.month)} {month.year}
+              {month.monthName}
             </span>
           ))}
           {value.length > 3 && (
@@ -232,17 +171,6 @@ const Morosos: React.FC = () => {
     }
   ];
 
-  if (playersLoading || paymentsLoading || categoriesLoading || loading) {
-    return (
-      <div className="flex items-center justify-center min-h-96">
-        <div className="flex items-center space-x-2 text-gray-600">
-          <RefreshCw className="w-5 h-5 animate-spin" />
-          <span>Calculando usuarios morosos...</span>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -253,7 +181,7 @@ const Morosos: React.FC = () => {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Usuarios Morosos</h1>
-            <p className="text-gray-600">Jugadores con pagos pendientes</p>
+            <p className="text-gray-600">Jugadores con pagos pendientes del año actual</p>
           </div>
         </div>
         
@@ -278,43 +206,57 @@ const Morosos: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-red-100 rounded-lg">
-              <User className="w-5 h-5 text-red-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Total Morosos</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalMorosos}</p>
+      {summary && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-red-100 rounded-lg">
+                <User className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Total Deudores</p>
+                <p className="text-2xl font-bold text-gray-900">{summary.totalDebtors}</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <CreditCard className="w-5 h-5 text-yellow-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Total Adeudado</p>
-              <p className="text-2xl font-bold text-gray-900">${stats.totalOwed.toLocaleString()}</p>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-yellow-100 rounded-lg">
+                <CreditCard className="w-5 h-5 text-yellow-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Total Adeudado</p>
+                <p className="text-2xl font-bold text-gray-900">${summary.totalOwed.toLocaleString()}</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Calendar className="w-5 h-5 text-blue-600" />
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Calendar className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Promedio Meses</p>
+                <p className="text-2xl font-bold text-gray-900">{summary.averageMonthsUnpaid.toFixed(1)}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-gray-600">Promedio Meses</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.averageMonthsOwed}</p>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <Calendar className="w-5 h-5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Período Analizado</p>
+                <p className="text-2xl font-bold text-gray-900">{summary.monthsChecked} meses</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Filters */}
       {showFilters && (
@@ -340,7 +282,7 @@ const Morosos: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Todas las categorías</option>
-                {Array.from(new Set(morososData.map(m => m.category))).map(category => (
+                {Array.from(new Set(debtors.map(d => d.category))).map(category => (
                   <option key={category} value={category}>{category}</option>
                 ))}
               </select>
@@ -348,7 +290,7 @@ const Morosos: React.FC = () => {
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Mínimo meses adeudados
+                Mínimo meses sin pagar
               </label>
               <select
                 value={filterMinMonths}
@@ -382,8 +324,13 @@ const Morosos: React.FC = () => {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="p-6 border-b border-gray-200">
           <h2 className="text-lg font-medium text-gray-900">
-            Lista de Morosos ({filteredMorosos.length})
+            Lista de Deudores ({filteredDebtors.length})
           </h2>
+          {summary && (
+            <p className="text-sm text-gray-600 mt-1">
+              Período: {summary.currentYear} (Enero - {getMonthName(summary.currentMonth)})
+            </p>
+          )}
         </div>
         
         <div className="overflow-x-auto">
@@ -401,19 +348,19 @@ const Morosos: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredMorosos.map((moroso, index) => (
-                <tr key={moroso.playerId} className="hover:bg-gray-50">
+              {filteredDebtors.map((debtor, index) => (
+                <tr key={debtor.playerId} className="hover:bg-gray-50">
                   {columns.map((column) => (
-                                       <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                     {renderCellValue(column, moroso)}
-                   </td>
+                    <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {renderCellValue(column, debtor)}
+                    </td>
                   ))}
                 </tr>
               ))}
             </tbody>
           </table>
           
-          {filteredMorosos.length === 0 && (
+          {filteredDebtors.length === 0 && (
             <div className="text-center py-12">
               <p className="text-gray-500">No se encontraron usuarios morosos</p>
             </div>
