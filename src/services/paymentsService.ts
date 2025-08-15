@@ -1,10 +1,16 @@
-import apiClient from '../lib/axios';
+import ApiClient from '../utils/apiClient';
 import { API_ENDPOINTS } from '../config/api';
 
 export interface PaymentCategory {
   _id: string;
   name: string;
   gender: string;
+}
+
+export interface PlayerCategory {
+  name: string;
+  gender: string;
+  cuota: number;
 }
 
 export interface PaymentPlayer {
@@ -28,6 +34,7 @@ export interface Payment {
   categoryId: string;
   player: PaymentPlayer;
   category: PaymentCategory; // Categoría histórica del payment
+  playerCategory?: PlayerCategory; // Categoría guardada al momento del pago
   createdAt: string;
   updatedAt: string;
 }
@@ -88,8 +95,8 @@ class PaymentsService {
     const queryString = params.toString();
     const url = queryString ? `${API_ENDPOINTS.PAYMENTS}?${queryString}` : API_ENDPOINTS.PAYMENTS;
     
-    const response = await apiClient.get(url);
-    return response.data;
+    const response = await ApiClient.get(url);
+    return response;
   }
 
   // Crear un nuevo pago
@@ -112,8 +119,8 @@ class PaymentsService {
 
   // Obtener un pago por ID
   async getPaymentById(id: string): Promise<Payment> {
-    const response = await apiClient.get(`${API_ENDPOINTS.PAYMENTS}/${id}`);
-    return response.data;
+    const response = await ApiClient.get(`${API_ENDPOINTS.PAYMENTS}/${id}`);
+    return response;
   }
 
   // Obtener pagos por jugador

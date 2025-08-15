@@ -1,4 +1,4 @@
-import apiClient from '../lib/axios';
+import ApiClient from '../utils/apiClient';
 import { API_ENDPOINTS, AUTH_CONFIG } from '../config/api';
 
 export interface LoginCredentials {
@@ -49,8 +49,8 @@ class AuthService {
 
   // Obtener usuario actual
   async getCurrentUser(): Promise<User> {
-    const response = await apiClient.get(API_ENDPOINTS.AUTH.ME);
-    return response.data;
+    const response = await ApiClient.get(API_ENDPOINTS.AUTH.ME);
+    return response;
   }
 
   // Logout

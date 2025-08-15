@@ -21,6 +21,10 @@ export const API_ENDPOINTS = {
   CATEGORIES: '/categories', 
   PLAYERS: '/players',
   PAYMENTS: '/payments',
+  FAMILIES: '/families',
+  CONFIGURATION: '/configuration',
+  ASSIGNMENTS: '/assignments',
+
   STATS: {
     DASHBOARD: '/stats/dashboard',
     MONTHLY_INCOME: '/stats/monthly-income',

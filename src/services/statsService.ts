@@ -1,4 +1,4 @@
-import apiClient from '../lib/axios';
+import ApiClient from '../utils/apiClient';
 import { API_ENDPOINTS } from '../config/api';
 
 export interface DashboardStats {
@@ -50,15 +50,15 @@ export interface MonthlyIncomeResponse {
 class StatsService {
   // Obtener estadísticas del dashboard
   async getDashboardStats(): Promise<DashboardStats> {
-    const response = await apiClient.get(API_ENDPOINTS.STATS.DASHBOARD);
-    return response.data;
+    const response = await ApiClient.get(API_ENDPOINTS.STATS.DASHBOARD);
+    return response;
   }
 
   // Obtener datos de ingresos mensuales por categoría
   async getMonthlyIncomeData(year?: number): Promise<MonthlyIncomeResponse> {
     const params = year ? { year: year.toString() } : {};
-    const response = await apiClient.get(API_ENDPOINTS.STATS.MONTHLY_INCOME, { params });
-    return response.data;
+    const response = await ApiClient.get(API_ENDPOINTS.STATS.MONTHLY_INCOME, { params });
+    return response;
   }
 }
 

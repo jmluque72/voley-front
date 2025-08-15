@@ -28,6 +28,7 @@ const Players: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [emailSearch, setEmailSearch] = useState('');
   const [showEmailSearch, setShowEmailSearch] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [formData, setFormData] = useState<CreatePlayerData>({
     firstName: '',
     lastName: '',
@@ -78,11 +79,20 @@ const Players: React.FC = () => {
   // Determinar qué datos mostrar (búsqueda por email o lista filtrada normal)
   const displayPlayers = searchResults.length > 0 ? searchResults : players;
   
-  const filteredPlayers = displayPlayers.filter(player =>
-    player.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    player.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (player.phone && player.phone.includes(searchTerm))
-  );
+  // Filtrar por categoría y término de búsqueda
+  const filteredPlayers = displayPlayers.filter(player => {
+    // Filtro por categoría
+    if (selectedCategory && player.category._id !== selectedCategory) {
+      return false;
+    }
+    
+    // Filtro por término de búsqueda
+    return (
+      player.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      player.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (player.phone && player.phone.includes(searchTerm))
+    );
+  });
 
   const handleAdd = () => {
     setEditingPlayer(null);
@@ -243,6 +253,10 @@ const Players: React.FC = () => {
     setShowEmailSearch(false);
   };
 
+  const handleClearCategoryFilter = () => {
+    setSelectedCategory('');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -265,53 +279,103 @@ const Players: React.FC = () => {
         </div>
       </div>
 
-      {/* Buscador por Email */}
-      {showEmailSearch && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      {/* Filtros */}
+      <div className="space-y-4">
+        {/* Filtro por Categoría */}
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
           <div className="flex items-center space-x-3">
             <div className="flex-1">
-              <label htmlFor="email-search" className="block text-sm font-medium text-blue-700 mb-2">
-                Buscar jugador por email:
+              <label htmlFor="category-filter" className="block text-sm font-medium text-green-700 mb-2">
+                Filtrar por Categoría:
               </label>
-              <input
-                id="email-search"
-                type="email"
-                value={emailSearch}
-                onChange={(e) => setEmailSearch(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleEmailSearch()}
-                className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Ejemplo: juan@email.com"
-              />
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={handleEmailSearch}
-                disabled={searching}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center space-x-1"
+              <select
+                id="category-filter"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full px-3 py-2 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
               >
-                {searching ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                ) : (
-                  <Search className="w-4 h-4" />
-                )}
-                <span>Buscar</span>
-              </button>
-              {(searchResults.length > 0 || emailSearch) && (
-                <button
-                  onClick={handleClearEmailSearch}
-                  className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors flex items-center space-x-1"
-                >
-                  <X className="w-4 h-4" />
-                  <span>Limpiar</span>
-                </button>
-              )}
+                <option value="">Todas las categorías</option>
+                {categories.map(category => (
+                  <option key={category._id} value={category._id}>
+                    {category.name} - {category.gender}
+                  </option>
+                ))}
+              </select>
             </div>
+            {selectedCategory && (
+              <button
+                onClick={handleClearCategoryFilter}
+                className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors flex items-center space-x-1"
+              >
+                <X className="w-4 h-4" />
+                <span>Limpiar</span>
+              </button>
+            )}
           </div>
-          {searchResults.length > 0 && (
-            <div className="mt-3 text-sm text-blue-600">
-              Se encontraron {searchResults.length} jugador(es) con el email "{emailSearch}"
+          {selectedCategory && (
+            <div className="mt-3 text-sm text-green-600">
+              Mostrando {filteredPlayers.length} jugador(es) de la categoría seleccionada
             </div>
           )}
+        </div>
+
+        {/* Buscador por Email */}
+        {showEmailSearch && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center space-x-3">
+              <div className="flex-1">
+                <label htmlFor="email-search" className="block text-sm font-medium text-blue-700 mb-2">
+                  Buscar jugador por email:
+                </label>
+                <input
+                  id="email-search"
+                  type="email"
+                  value={emailSearch}
+                  onChange={(e) => setEmailSearch(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleEmailSearch()}
+                  className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Ejemplo: juan@email.com"
+                />
+              </div>
+              <div className="flex space-x-2">
+                <button
+                  onClick={handleEmailSearch}
+                  disabled={searching}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center space-x-1"
+                >
+                  {searching ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  ) : (
+                    <Search className="w-4 h-4" />
+                  )}
+                  <span>Buscar</span>
+                </button>
+                {(searchResults.length > 0 || emailSearch) && (
+                  <button
+                    onClick={handleClearEmailSearch}
+                    className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors flex items-center space-x-1"
+                  >
+                    <X className="w-4 h-4" />
+                    <span>Limpiar</span>
+                  </button>
+                )}
+              </div>
+            </div>
+            {searchResults.length > 0 && (
+              <div className="mt-3 text-sm text-blue-600">
+                Se encontraron {searchResults.length} jugador(es) con el email "{emailSearch}"
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Información de resultados */}
+      {!selectedCategory && !emailSearch && searchResults.length === 0 && (
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+          <p className="text-sm text-gray-600">
+            Mostrando {filteredPlayers.length} jugador(es) de {players.length} total
+          </p>
         </div>
       )}
       

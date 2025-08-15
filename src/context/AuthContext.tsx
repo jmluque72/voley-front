@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import axios from 'axios';
+import ApiClient from '../utils/apiClient';
+import { API_ENDPOINTS } from '../config/api';
 
 interface User {
   id: string;
@@ -17,36 +18,34 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
+}
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Restaurar usuario si hay token guardado
   useEffect(() => {
     const restoreSession = async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('voley_token');
       if (token) {
         try {
-          const res = await axios.get('http://localhost:3000/api/users/me', {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          setUser(res.data);
+          const res = await ApiClient.get(API_ENDPOINTS.AUTH.ME);
+          setUser(res);
         } catch (err) {
           setUser(null);
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
+          localStorage.removeItem('voley_token');
+          localStorage.removeItem('voley_user');
         }
       }
       setLoading(false);
@@ -56,11 +55,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const res = await axios.post('http://localhost:3000/api/auth/login', { email, password });
-      const user = res.data.user;
+      const res = await ApiClient.post(API_ENDPOINTS.AUTH.LOGIN, { email, password });
+      const user = res.user;
       setUser(user);
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('voley_token', res.token);
+      localStorage.setItem('voley_user', JSON.stringify(user));
       return true;
     } catch (err) {
       return false;
@@ -69,8 +68,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem('voley_token');
+    localStorage.removeItem('voley_user');
   };
 
   const isAuthenticated = !!user;

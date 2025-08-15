@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Filter, X, FileText } from 'lucide-react';
+import { Plus, Filter, X, FileText, Edit, Trash2 } from 'lucide-react';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { usePayments } from '../hooks/usePayments';
@@ -53,19 +53,39 @@ const Payments: React.FC = () => {
       }
     },
     { 
-      key: 'category', 
-      label: 'Categoría (Histórica)',
-      render: (value: any) => {
-        if (!value) return 'Sin categoría';
-        return `${value.name} - ${value.gender}`;
+      key: 'receiptNumber', 
+      label: 'Número de Recibo',
+      render: (value: string) => {
+        return value ? `№ ${value}` : 'Sin número';
       }
     },
     { 
-      key: 'player', 
-      label: 'Categoría Actual',
-      render: (value: any) => {
-        if (!value || !value.category) return 'Sin categoría';
-        return `${value.category.name} - ${value.category.gender}`;
+      key: 'playerCategory', 
+      label: 'Categoría al Pago',
+      render: (value: any, payment: Payment) => {
+        // Mostrar la categoría histórica guardada en el pago
+        if (payment.playerCategory) {
+          return (
+            <div className="text-sm">
+              <div className="font-medium">{payment.playerCategory.name}</div>
+              <div className="text-gray-600">
+                {payment.playerCategory.gender} - ${payment.playerCategory.cuota}
+              </div>
+            </div>
+          );
+        }
+        // Fallback a la categoría del jugador si no hay categoría histórica
+        if (payment.player && payment.player.category) {
+          return (
+            <div className="text-sm">
+              <div className="font-medium">{payment.player.category.name}</div>
+              <div className="text-gray-600">
+                {payment.player.category.gender} - ${payment.player.category.cuota}
+              </div>
+            </div>
+          );
+        }
+        return <span className="text-gray-500">Sin categoría</span>;
       }
     },
     { 
@@ -98,25 +118,7 @@ const Payments: React.FC = () => {
         return date.toLocaleDateString('es-ES');
       }
     },
-    {
-      key: 'actions',
-      label: 'Acciones',
-      render: (value: any, payment: Payment) => (
-        <div className="flex space-x-2">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleGenerateReceipt(payment);
-            }}
-            className="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700 transition-colors flex items-center space-x-1"
-            title="Generar recibo"
-          >
-            <FileText className="w-3 h-3" />
-            <span>Recibo</span>
-          </button>
-        </div>
-      )
-    }
+
   ];
 
   const filteredData = filteredPayments.filter(payment =>
@@ -436,6 +438,43 @@ const Payments: React.FC = () => {
           onDelete={handleDelete}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
+          customActions={(payment: Payment) => (
+            <div className="flex space-x-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEdit(payment);
+                }}
+                className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700 transition-colors flex items-center space-x-1"
+                title="Editar pago"
+              >
+                <Edit className="w-3 h-3" />
+                <span>Editar</span>
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(payment);
+                }}
+                className="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700 transition-colors flex items-center space-x-1"
+                title="Eliminar pago"
+              >
+                <Trash2 className="w-3 h-3" />
+                <span>Eliminar</span>
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleGenerateReceipt(payment);
+                }}
+                className="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700 transition-colors flex items-center space-x-1"
+                title="Generar recibo"
+              >
+                <FileText className="w-3 h-3" />
+                <span>Recibo</span>
+              </button>
+            </div>
+          )}
         />
       )}
 

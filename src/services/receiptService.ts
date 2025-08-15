@@ -263,8 +263,140 @@ class ReceiptService {
   }
 
   generateSimpleReceipt(payment: Payment): void {
-    // Para el recibo simple, usamos el mismo formato pero más básico
-    this.generateReceiptPDF({ payment });
+    // Nuevo diseño simple y responsive
+    this.generateMobileReceipt({ payment });
+  }
+
+  // Nuevo método para recibo optimizado para móviles
+  generateMobileReceipt(data: ReceiptData): void {
+    const { payment, companyInfo = this.defaultCompanyInfo } = data;
+    
+    // Crear nuevo documento PDF optimizado para móviles
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    // Configuración para móviles
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.3);
+
+    // === ENCABEZADO SIMPLE ===
+    let yPos = 20;
+
+    // Título principal
+    doc.setFontSize(18);
+    doc.setTextColor(0, 0, 0);
+    doc.text('RECIBO DE PAGO', 105, yPos, { align: 'center' });
+
+    yPos += 10;
+
+    // Número de recibo
+    const receiptNumber = data.receiptNumber || payment.receiptNumber || `REC-${String(Math.floor(Math.random() * 999999) + 1).padStart(6, '0')}`;
+    doc.setFontSize(12);
+    doc.setTextColor(255, 0, 0);
+    doc.text(`N° ${receiptNumber}`, 105, yPos, { align: 'center' });
+
+    yPos += 8;
+
+    // Fecha
+    const paymentDate = new Date(payment.createdAt);
+    const formattedDate = paymentDate.toLocaleDateString('es-AR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Fecha: ${formattedDate}`, 105, yPos, { align: 'center' });
+
+    yPos += 15;
+
+    // === INFORMACIÓN DEL JUGADOR ===
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text('JUGADOR:', 20, yPos);
+    
+    yPos += 8;
+    doc.setFontSize(14);
+    const playerName = payment.player ? payment.player.fullName : 'N/A';
+    doc.text(playerName, 20, yPos);
+
+    yPos += 10;
+
+    // === DETALLES DEL PAGO ===
+    doc.setFontSize(12);
+    doc.text('DETALLES:', 20, yPos);
+    
+    yPos += 8;
+    doc.setFontSize(10);
+    
+    // Período
+    const period = `${this.getMonthName(payment.month)} ${payment.year}`;
+    doc.text(`Período: ${period}`, 20, yPos);
+    
+    yPos += 6;
+    
+    // Categoría
+    const category = payment.playerCategory ? 
+      `${payment.playerCategory.name} ${payment.playerCategory.gender}` : 
+      (payment.player?.category ? `${payment.player.category.name} ${payment.player.category.gender}` : 'N/A');
+    doc.text(`Categoría: ${category}`, 20, yPos);
+    
+    yPos += 6;
+    
+    // Método de pago
+    const paymentMethod = payment.paymentMethod === 'efectivo' ? 'Efectivo' : 'Transferencia Bancaria';
+    doc.text(`Método: ${paymentMethod}`, 20, yPos);
+
+    yPos += 15;
+
+    // === MONTO ===
+    doc.setFontSize(16);
+    doc.setTextColor(0, 0, 0);
+    doc.text('IMPORTE:', 20, yPos);
+    
+    yPos += 8;
+    doc.setFontSize(20);
+    doc.setTextColor(255, 0, 0);
+    const formattedAmount = `$${payment.amount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
+    doc.text(formattedAmount, 20, yPos);
+
+    yPos += 10;
+    
+    // Monto en palabras
+    doc.setFontSize(8);
+    doc.setTextColor(0, 0, 0);
+    const amountInWords = this.numberToWords(payment.amount).toUpperCase();
+    doc.text(`(${amountInWords} PESOS)`, 20, yPos);
+
+    yPos += 20;
+
+    // === FIRMA ===
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Firma:', 20, yPos);
+    
+    yPos += 5;
+    doc.line(20, yPos, 80, yPos);
+
+    yPos += 15;
+
+    // === INFORMACIÓN DEL CLUB ===
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    doc.text(companyInfo.name, 105, yPos, { align: 'center' });
+    
+    yPos += 4;
+    doc.text(companyInfo.address, 105, yPos, { align: 'center' });
+    
+    yPos += 4;
+    doc.text(companyInfo.phone, 105, yPos, { align: 'center' });
+
+    // Descargar el PDF
+    const fileName = `recibo_${payment.player?.fullName?.replace(/\s+/g, '_') || 'jugador'}_${this.getMonthName(payment.month)}_${payment.year}.pdf`;
+    doc.save(fileName);
   }
 
   generateBulkReceipts(payments: Payment[], title: string = 'Recibos_Múltiples'): void {

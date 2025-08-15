@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import apiClient from '../lib/axios';
+import ApiClient from '../utils/apiClient';
 
 interface DebtorMonth {
   month: number;
@@ -50,12 +50,12 @@ export const useDebtors = () => {
       
       console.log('🔍 Fetching debtors from API...');
       
-      const response = await apiClient.get<DebtorsResponse>('/stats/debtors');
+      const response = await ApiClient.get<DebtorsResponse>('/stats/debtors');
       
-      console.log('✅ Debtors data received:', response.data);
+      console.log('✅ Debtors data received:', response);
       
-      setDebtors(response.data.debtors);
-      setSummary(response.data.summary);
+      setDebtors(response.debtors);
+      setSummary(response.summary);
     } catch (err: any) {
       console.error('❌ Error fetching debtors:', err);
       setError(err.response?.data?.msg || 'Error al cargar los deudores');

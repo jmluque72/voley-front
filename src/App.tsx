@@ -6,7 +6,12 @@ import Layout from './components/Layout';
 import Users from './pages/Users';
 import Categories from './pages/Categories';
 import Players from './pages/Players';
+import Families from './pages/Families';
+import Configuration from './pages/Configuration';
 import Payments from './pages/Payments';
+import Assignments from './pages/Assignments';
+
+
 import Morosos from './pages/Morosos';
 import Reports from './pages/Reports';
 
@@ -37,8 +42,13 @@ const AppContent: React.FC = () => {
           <Route path="users" element={<Users />} />
           <Route path="categories" element={<Categories />} />
           <Route path="players" element={<Players />} />
-          <Route path="payments" element={<Payments />} />
-          <Route path="morosos" element={<Morosos />} />
+          <Route path="families" element={<Families />} />
+                      <Route path="configuration" element={<Configuration />} />
+            <Route path="payments" element={<Payments />} />
+            <Route path="assignments" element={<Assignments />} />
+
+
+            <Route path="morosos" element={<Morosos />} />
           <Route path="reports" element={<Reports />} />
         </Route>
       </Routes>

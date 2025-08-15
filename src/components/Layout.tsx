@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getAvailableNavigation, hasPermission } from '../utils/permissions';
+import RoleBadge from './RoleBadge';
 import { 
   Users, 
   FolderOpen, 
@@ -13,7 +15,9 @@ import {
   X,
   User,
   Search,
-  ChevronDown
+  ChevronDown,
+  UserCheck,
+  Settings
 } from 'lucide-react';
 
 const Layout: React.FC = () => {
@@ -23,14 +27,38 @@ const Layout: React.FC = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
 
-  const navigation = [
-    { name: 'Users', href: '/users', icon: Users },
-    { name: 'Categories', href: '/categories', icon: FolderOpen },
-    { name: 'Players', href: '/players', icon: GamepadIcon },
-    { name: 'Payments', href: '/payments', icon: CreditCard },
-    { name: 'Morosos', href: '/morosos', icon: AlertTriangle },
-    { name: 'Reports', href: '/reports', icon: BarChart3 },
-  ];
+  // Función para obtener el título de la página en español
+  const getPageTitle = (pathname: string): string => {
+    const titles: { [key: string]: string } = {
+      '/': 'Inicio',
+      '/users': 'Usuarios',
+      '/categories': 'Categorías',
+      '/players': 'Jugadores',
+      '/payments': 'Pagos',
+      '/configuration': 'Configuración',
+
+      '/assignments': 'Asignaciones',
+      '/morosos': 'Morosos',
+      '/reports': 'Reportes',
+    };
+    
+    return titles[pathname] || 'Inicio';
+  };
+
+  // Obtener navegación basada en permisos del usuario
+  const availableNavigation = getAvailableNavigation(user);
+  
+  // Mapear iconos a los nombres
+  const iconMap: { [key: string]: any } = {
+    Users,
+    FolderOpen,
+    GamepadIcon,
+    CreditCard,
+    AlertTriangle,
+    BarChart3,
+    UserCheck,
+    Settings
+  };
 
   const isActive = (href: string) => location.pathname === href;
 
@@ -48,7 +76,7 @@ const Layout: React.FC = () => {
         bg-gray-900 transition-transform duration-300 ease-in-out`}>
         
         <div className="flex items-center justify-between h-16 px-6 bg-gray-800">
-          <h1 className="text-xl font-bold text-white">Admin Panel</h1>
+          <h1 className="text-xl font-bold text-white">Panel de Administración</h1>
           <button
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden text-gray-400 hover:text-white transition-colors"
@@ -59,8 +87,8 @@ const Layout: React.FC = () => {
 
         <nav className="mt-8 px-4">
           <div className="space-y-2">
-            {navigation.map((item) => {
-              const Icon = item.icon;
+            {availableNavigation.map((item) => {
+              const Icon = iconMap[item.icon];
               return (
                 <Link
                   key={item.name}
@@ -96,7 +124,7 @@ const Layout: React.FC = () => {
             <button
               onClick={logout}
               className="text-gray-400 hover:text-white transition-colors"
-              title="Logout"
+              title="Cerrar Sesión"
             >
               <LogOut className="w-5 h-5" />
             </button>
@@ -118,7 +146,7 @@ const Layout: React.FC = () => {
                 <Menu className="w-6 h-6" />
               </button>
               <h2 className="text-xl font-semibold text-gray-900 capitalize">
-                {location.pathname.slice(1) || 'Dashboard'}
+                {getPageTitle(location.pathname)}
               </h2>
             </div>
 
@@ -156,7 +184,9 @@ const Layout: React.FC = () => {
                   </div>
                   <div className="hidden sm:block text-left">
                     <p className="text-sm font-medium">{user?.name}</p>
-                    <p className="text-xs text-gray-500">{user?.role}</p>
+                    <div className="flex items-center space-x-2">
+                      <RoleBadge role={user?.role || ''} size="sm" />
+                    </div>
                   </div>
                   <ChevronDown className="w-4 h-4" />
                 </button>
@@ -167,6 +197,9 @@ const Layout: React.FC = () => {
                     <div className="px-4 py-3 border-b border-gray-100">
                       <p className="text-sm font-medium text-gray-900">{user?.name}</p>
                       <p className="text-sm text-gray-500">{user?.email}</p>
+                      <div className="mt-2">
+                        <RoleBadge role={user?.role || ''} size="sm" />
+                      </div>
                     </div>
                     
                     <div className="border-t border-gray-100 mt-1">

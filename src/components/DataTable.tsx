@@ -15,6 +15,7 @@ interface DataTableProps {
   onDelete: (item: any) => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
+  customActions?: (item: any) => React.ReactNode;
 }
 
 const DataTable: React.FC<DataTableProps> = ({
@@ -24,6 +25,7 @@ const DataTable: React.FC<DataTableProps> = ({
   onDelete,
   searchTerm,
   onSearchChange,
+  customActions,
 }) => {
   const renderCellValue = (column: Column, item: any) => {
     const value = item[column.key];
@@ -34,7 +36,7 @@ const DataTable: React.FC<DataTableProps> = ({
         return column.render(value, item);
       } catch (error) {
         console.error(`Error rendering column ${column.key}:`, error);
-        return 'Error';
+        return 'Error de renderizado';
       }
     }
     
@@ -68,7 +70,7 @@ const DataTable: React.FC<DataTableProps> = ({
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input
             type="text"
-            placeholder="Search..."
+            placeholder="Buscar..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -89,7 +91,7 @@ const DataTable: React.FC<DataTableProps> = ({
                 </th>
               ))}
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
+                Acciones
               </th>
             </tr>
           </thead>
@@ -102,18 +104,24 @@ const DataTable: React.FC<DataTableProps> = ({
                   </td>
                 ))}
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
-                    onClick={() => onEdit(item)}
-                    className="text-blue-600 hover:text-blue-900 mr-4 transition-colors"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => onDelete(item)}
-                    className="text-red-600 hover:text-red-900 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {customActions ? (
+                    customActions(item)
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => onEdit(item)}
+                        className="text-blue-600 hover:text-blue-900 mr-4 transition-colors"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => onDelete(item)}
+                        className="text-red-600 hover:text-red-900 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}
@@ -123,7 +131,7 @@ const DataTable: React.FC<DataTableProps> = ({
       
       {data.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-500">No data available</p>
+          <p className="text-gray-500">No hay datos disponibles</p>
         </div>
       )}
     </div>

@@ -13,6 +13,7 @@ interface UsePlayersReturn {
   searchPlayerByEmail: (email: string) => Promise<void>;
   refreshPlayers: () => Promise<void>;
   clearSearch: () => void;
+  bulkCreatePlayers: (data: CreatePlayerData[]) => Promise<{ success: boolean; message: string; created: number; errors: string[] }>;
 }
 
 export const usePlayers = (): UsePlayersReturn => {
@@ -106,6 +107,27 @@ export const usePlayers = (): UsePlayersReturn => {
     setSearchResults([]); // Limpiar búsqueda al refrescar
   };
 
+  const bulkCreatePlayers = async (data: CreatePlayerData[]): Promise<{ success: boolean; message: string; created: number; errors: string[] }> => {
+    try {
+      const result = await playersService.bulkCreatePlayers(data);
+      
+      // Recargar la lista de jugadores después de la carga masiva
+      if (result.success) {
+        await loadPlayers();
+      }
+      
+      return result;
+    } catch (err: any) {
+      console.error('Error en carga masiva:', err);
+      return {
+        success: false,
+        message: 'Error en la carga masiva',
+        created: 0,
+        errors: [err.response?.data?.msg || 'Error desconocido']
+      };
+    }
+  };
+
   useEffect(() => {
     loadPlayers();
   }, []);
@@ -122,5 +144,6 @@ export const usePlayers = (): UsePlayersReturn => {
     searchPlayerByEmail,
     refreshPlayers,
     clearSearch,
+    bulkCreatePlayers,
   };
 }; 

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Upload } from 'lucide-react';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
+import BulkUploadModal from '../components/BulkUploadModal';
 import { useCategories } from '../hooks/useCategories';
+import { usePlayers } from '../hooks/usePlayers';
 import { Category, CreateCategoryData } from '../services/categoriesService';
 
 const Categories: React.FC = () => {
@@ -16,7 +18,11 @@ const Categories: React.FC = () => {
     refreshCategories
   } = useCategories();
 
+  const { bulkCreatePlayers } = usePlayers();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState<CreateCategoryData>({
@@ -57,6 +63,22 @@ const Categories: React.FC = () => {
           return '';
         }
       }
+    },
+    {
+      key: 'actions',
+      label: 'Acciones',
+      render: (value: any, row: Category) => (
+        <div className="flex space-x-2">
+          <button
+            onClick={() => handleBulkUpload(row)}
+            className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors flex items-center space-x-1"
+            title="Cargar jugadores masivamente"
+          >
+            <Upload className="w-3 h-3" />
+            <span>Cargar Jugadores</span>
+          </button>
+        </div>
+      )
     }
   ];
 
@@ -134,6 +156,20 @@ const Categories: React.FC = () => {
     setFormData({ name: '', gender: 'masculino', cuota: 0 });
     setEditingCategory(null);
     setValidationError('');
+  };
+
+  const handleBulkUpload = (category: Category) => {
+    setSelectedCategory(category);
+    setIsBulkUploadOpen(true);
+  };
+
+  const handleBulkUploadSubmit = async (data: any[]) => {
+    try {
+      await bulkCreatePlayers(data);
+    } catch (error) {
+      console.error('Error en carga masiva:', error);
+      throw error;
+    }
   };
 
   return (
@@ -269,6 +305,14 @@ const Categories: React.FC = () => {
           </div>
         </form>
       </Modal>
+
+      {/* Modal de carga masiva */}
+      <BulkUploadModal
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        category={selectedCategory}
+        onUpload={handleBulkUploadSubmit}
+      />
     </div>
   );
 };

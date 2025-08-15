@@ -1,4 +1,4 @@
-import apiClient from '../lib/axios';
+import ApiClient from '../utils/apiClient';
 import { API_ENDPOINTS } from '../config/api';
 
 export interface Category {
@@ -25,32 +25,32 @@ export interface UpdateCategoryData {
 class CategoriesService {
   // Obtener todas las categorías
   async getCategories(): Promise<Category[]> {
-    const response = await apiClient.get(API_ENDPOINTS.CATEGORIES);
-    return response.data;
+    const response = await ApiClient.get(API_ENDPOINTS.CATEGORIES);
+    return response;
   }
 
   // Crear una nueva categoría
   async createCategory(categoryData: CreateCategoryData): Promise<Category> {
-    const response = await apiClient.post(API_ENDPOINTS.CATEGORIES, categoryData);
-    return response.data;
+    const response = await ApiClient.post(API_ENDPOINTS.CATEGORIES, categoryData);
+    return response;
   }
 
   // Actualizar una categoría existente
   async updateCategory(id: string, categoryData: UpdateCategoryData): Promise<Category> {
-    const response = await apiClient.put(`${API_ENDPOINTS.CATEGORIES}/${id}`, categoryData);
-    return response.data;
+    const response = await ApiClient.put(`${API_ENDPOINTS.CATEGORIES}/${id}`, categoryData);
+    return response;
   }
 
   // Eliminar una categoría
   async deleteCategory(id: string): Promise<{ msg: string }> {
-    const response = await apiClient.delete(`${API_ENDPOINTS.CATEGORIES}/${id}`);
-    return response.data;
+    const response = await ApiClient.delete(`${API_ENDPOINTS.CATEGORIES}/${id}`);
+    return response;
   }
 
   // Obtener una categoría por ID
   async getCategoryById(id: string): Promise<Category> {
-    const response = await apiClient.get(`${API_ENDPOINTS.CATEGORIES}/${id}`);
-    return response.data;
+    const response = await ApiClient.get(`${API_ENDPOINTS.CATEGORIES}/${id}`);
+    return response;
   }
 }
 

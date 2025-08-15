@@ -1,4 +1,4 @@
-import apiClient from '../lib/axios';
+import ApiClient from '../utils/apiClient';
 import { API_ENDPOINTS } from '../config/api';
 
 export interface Player {
@@ -54,14 +54,14 @@ class PlayersService {
     const queryString = params.toString();
     const url = queryString ? `${API_ENDPOINTS.PLAYERS}?${queryString}` : API_ENDPOINTS.PLAYERS;
     
-    const response = await apiClient.get(url);
-    return response.data;
+    const response = await ApiClient.get(url);
+    return response;
   }
 
   // Buscar jugador por email específico
   async searchPlayerByEmail(email: string): Promise<Player[]> {
-    const response = await apiClient.get(API_ENDPOINTS.PLAYERS);
-    const players = response.data;
+    const response = await ApiClient.get(API_ENDPOINTS.PLAYERS);
+    const players = response;
     
     // Filtrar en el frontend para búsqueda exacta o parcial
     return players.filter((player: Player) => 
@@ -71,26 +71,26 @@ class PlayersService {
 
   // Crear un nuevo jugador
   async createPlayer(playerData: CreatePlayerData): Promise<Player> {
-    const response = await apiClient.post(API_ENDPOINTS.PLAYERS, playerData);
-    return response.data;
+    const response = await ApiClient.post(API_ENDPOINTS.PLAYERS, playerData);
+    return response;
   }
 
   // Actualizar un jugador existente
   async updatePlayer(id: string, playerData: UpdatePlayerData): Promise<Player> {
-    const response = await apiClient.put(`${API_ENDPOINTS.PLAYERS}/${id}`, playerData);
-    return response.data;
+    const response = await ApiClient.put(`${API_ENDPOINTS.PLAYERS}/${id}`, playerData);
+    return response;
   }
 
   // Eliminar un jugador
   async deletePlayer(id: string): Promise<{ msg: string }> {
-    const response = await apiClient.delete(`${API_ENDPOINTS.PLAYERS}/${id}`);
-    return response.data;
+    const response = await ApiClient.delete(`${API_ENDPOINTS.PLAYERS}/${id}`);
+    return response;
   }
 
   // Obtener un jugador por ID
   async getPlayerById(id: string): Promise<Player> {
-    const response = await apiClient.get(`${API_ENDPOINTS.PLAYERS}/${id}`);
-    return response.data;
+    const response = await ApiClient.get(`${API_ENDPOINTS.PLAYERS}/${id}`);
+    return response;
   }
 
   // Verificar si un email ya existe
@@ -111,6 +111,30 @@ class PlayersService {
   async getPlayersByCategory(categoryId: string): Promise<Player[]> {
     const players = await this.getPlayers();
     return players.filter(player => player.category._id === categoryId);
+  }
+
+  // Cargar jugadores masivamente
+  async bulkCreatePlayers(playersData: CreatePlayerData[]): Promise<{ success: boolean; message: string; created: number; errors: string[] }> {
+    try {
+      const response = await ApiClient.post(`${API_ENDPOINTS.PLAYERS}/bulk`, {
+        players: playersData
+      });
+      
+      return {
+        success: response.success,
+        message: response.message,
+        created: response.created,
+        errors: response.errors || []
+      };
+    } catch (error: any) {
+      console.error('Error en carga masiva:', error);
+      return {
+        success: false,
+        message: 'Error en la carga masiva',
+        created: 0,
+        errors: [error.response?.data?.msg || error.message || 'Error desconocido']
+      };
+    }
   }
 }
 
