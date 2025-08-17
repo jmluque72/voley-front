@@ -1,0 +1,8 @@
+# AWS Amplify redirects for SPA
+/*    /index.html   200
+
+# Redirect www to non-www (optional)
+https://www.yourdomain.com/* https://yourdomain.com/:splat 301!
+
+# Force HTTPS (optional)
+http://yourdomain.com/* https://yourdomain.com/:splat 301!
