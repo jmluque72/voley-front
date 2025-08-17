@@ -1,6 +1,6 @@
 // Configuración de la API
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api', // Cambiado a localhost
+  BASE_URL: "ttps://voleyapi.weiv.ar/api", // Cambiado a localhost
   TIMEOUT: 10000,
 } as const;
 
