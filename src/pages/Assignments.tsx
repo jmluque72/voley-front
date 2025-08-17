@@ -184,7 +184,7 @@ const Assignments: React.FC = () => {
                 <option value="">Seleccionar cobrador</option>
                 {collectors.map((collector) => (
                   <option key={collector._id} value={collector._id}>
-                    {collector.name}
+                    {collector.firstName} {collector.lastName}
                   </option>
                 ))}
               </select>
@@ -272,7 +272,7 @@ const Assignments: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
                         <div className="text-sm font-medium text-gray-900">
-                          {assignment.collector.name}
+                          {assignment.collector.firstName} {assignment.collector.lastName}
                         </div>
                         <div className="text-sm text-gray-500">
                           {assignment.collector.email}

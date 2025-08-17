@@ -6,8 +6,8 @@ export const API_CONFIG = {
 
 // Configuración de autenticación
 export const AUTH_CONFIG = {
-  TOKEN_KEY: import.meta.env.VITE_TOKEN_STORAGE_KEY || 'voley_token',
-  USER_KEY: import.meta.env.VITE_USER_STORAGE_KEY || 'voley_user',
+  TOKEN_KEY: import.meta.env.VITE_TOKEN_STORAGE_KEY || 'easyvoley_token',
+  USER_KEY: import.meta.env.VITE_USER_STORAGE_KEY || 'easyvoley_user',
 } as const;
 
 // URLs de endpoints

@@ -4,7 +4,8 @@ import { API_ENDPOINTS } from '../config/api';
 // Interfaces
 export interface Collector {
   _id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   role: string;
 }

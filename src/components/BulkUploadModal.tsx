@@ -63,8 +63,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             const lines = data.split('\n');
             const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
             
-            // Validar headers requeridos
-            const requiredHeaders = ['nombre', 'apellido', 'email', 'fecha_nacimiento'];
+            // Validar headers requeridos (solo nombre y apellido)
+            const requiredHeaders = ['nombre', 'apellido'];
             const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
             
             if (missingHeaders.length > 0) {
@@ -80,15 +80,17 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                 player[header] = values[i] || '';
               });
               
-              // Validar datos requeridos
-              if (!player.nombre || !player.apellido || !player.email) {
-                throw new Error(`Fila ${index + 2}: Datos incompletos`);
+              // Validar datos requeridos (solo nombre y apellido)
+              if (!player.nombre || !player.apellido) {
+                throw new Error(`Fila ${index + 2}: Nombre y apellido son obligatorios`);
               }
               
-              // Validar formato de email
-              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-              if (!emailRegex.test(player.email)) {
-                throw new Error(`Fila ${index + 2}: Email inválido`);
+              // Validar formato de email (solo si se proporciona)
+              if (player.email && player.email.trim()) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(player.email)) {
+                  throw new Error(`Fila ${index + 2}: Email inválido`);
+                }
               }
               
               // Validar formato de fecha
@@ -102,7 +104,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
               return {
                 firstName: player.nombre,
                 lastName: player.apellido,
-                email: player.email,
+                email: player.email || '',
                 birthDate: player.fecha_nacimiento || '2000-01-01',
                 phone: player.telefono || '',
                 categoryId: category?._id || ''

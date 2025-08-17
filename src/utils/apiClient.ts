@@ -1,4 +1,4 @@
-import { API_CONFIG } from '../config/api';
+import { API_CONFIG, AUTH_CONFIG } from '../config/api';
 
 class ApiClient {
   private baseURL: string;
@@ -14,7 +14,7 @@ class ApiClient {
     const url = `${this.baseURL}${endpoint}`;
     
     // Obtener token del localStorage
-    const token = localStorage.getItem('voley_token');
+    const token = localStorage.getItem(AUTH_CONFIG.TOKEN_KEY);
     
     console.log('🔍 API Request:', {
       url,
@@ -46,8 +46,8 @@ class ApiClient {
         if (response.status === 401) {
           console.log('🚨 401 Unauthorized - Redirecting to login');
           // Token expirado, redirigir al login
-          localStorage.removeItem('voley_token');
-          localStorage.removeItem('voley_user');
+          localStorage.removeItem(AUTH_CONFIG.TOKEN_KEY);
+          localStorage.removeItem(AUTH_CONFIG.USER_KEY);
           window.location.href = '/login';
           throw new Error('Sesión expirada');
         }

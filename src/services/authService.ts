@@ -27,24 +27,24 @@ export interface AuthResponse {
 class AuthService {
   // Login del usuario
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await apiClient.post(API_ENDPOINTS.AUTH.LOGIN, credentials);
+    const response = await ApiClient.post(API_ENDPOINTS.AUTH.LOGIN, credentials);
     
     // Guardar token y usuario en localStorage
-    localStorage.setItem(AUTH_CONFIG.TOKEN_KEY, response.data.token);
-    localStorage.setItem(AUTH_CONFIG.USER_KEY, JSON.stringify(response.data.user));
+    localStorage.setItem(AUTH_CONFIG.TOKEN_KEY, response.token);
+    localStorage.setItem(AUTH_CONFIG.USER_KEY, JSON.stringify(response.user));
     
-    return response.data;
+    return response;
   }
 
   // Registro de usuario
   async register(userData: RegisterData): Promise<AuthResponse> {
-    const response = await apiClient.post(API_ENDPOINTS.AUTH.REGISTER, userData);
+    const response = await ApiClient.post(API_ENDPOINTS.AUTH.REGISTER, userData);
     
     // Guardar token y usuario en localStorage
-    localStorage.setItem(AUTH_CONFIG.TOKEN_KEY, response.data.token);
-    localStorage.setItem(AUTH_CONFIG.USER_KEY, JSON.stringify(response.data.user));
+    localStorage.setItem(AUTH_CONFIG.TOKEN_KEY, response.token);
+    localStorage.setItem(AUTH_CONFIG.USER_KEY, JSON.stringify(response.user));
     
-    return response.data;
+    return response;
   }
 
   // Obtener usuario actual

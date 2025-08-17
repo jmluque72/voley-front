@@ -25,7 +25,7 @@ El archivo debe contener las siguientes columnas:
 |-------|-------------|-----------|---------|
 | `nombre` | Nombre del jugador | ✅ | Texto |
 | `apellido` | Apellido del jugador | ✅ | Texto |
-| `email` | Email único | ✅ | Email válido |
+| `email` | Email único | ❌ | Email válido |
 | `fecha_nacimiento` | Fecha de nacimiento | ❌ | YYYY-MM-DD |
 | `telefono` | Número de teléfono | ❌ | Texto |
 
@@ -70,12 +70,13 @@ Carlos,Rodríguez,carlos.rodriguez@email.com,2005-11-08,555666777
 ### Campos Obligatorios
 - ✅ Nombre (no puede estar vacío)
 - ✅ Apellido (no puede estar vacío)
-- ✅ Email (formato válido y único)
+- ❌ Email (opcional, pero debe ser único si se proporciona)
 
 ### Validaciones Específicas
 
 #### Email
-- Debe tener formato válido: `usuario@dominio.com`
+- Campo opcional
+- Si se proporciona, debe tener formato válido: `usuario@dominio.com`
 - Debe ser único en el sistema
 - Se convierte automáticamente a minúsculas
 
