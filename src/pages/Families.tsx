@@ -36,10 +36,10 @@ const Families: React.FC = () => {
   useEffect(() => {
     // Filtrar familias basado en el término de búsqueda
     const filtered = families.filter(family => 
-      family.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      family.primaryPlayer?.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      family.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      family.primaryPlayer?.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       family.members.some(member => 
-        member.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+        member.fullName?.toLowerCase().includes(searchTerm.toLowerCase())
       )
     );
     setFilteredFamilies(filtered);
@@ -48,9 +48,9 @@ const Families: React.FC = () => {
   useEffect(() => {
     // Filtrar jugadores basado en el término de búsqueda
     const filtered = players.filter(player => 
-      player.fullName.toLowerCase().includes(playerSearchTerm.toLowerCase()) ||
-      player.email.toLowerCase().includes(playerSearchTerm.toLowerCase()) ||
-      (player.category && player.category.name.toLowerCase().includes(playerSearchTerm.toLowerCase()))
+      player.fullName?.toLowerCase().includes(playerSearchTerm.toLowerCase()) ||
+      player.email?.toLowerCase().includes(playerSearchTerm.toLowerCase()) ||
+      (player.category?.name?.toLowerCase().includes(playerSearchTerm.toLowerCase()))
     );
     setFilteredPlayers(filtered);
   }, [players, playerSearchTerm]);
