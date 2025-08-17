@@ -3,7 +3,9 @@ import { API_ENDPOINTS } from '../config/api';
 
 export interface User {
   _id: string;
-  name: string;
+  id: string;
+  firstName: string;
+  lastName: string;
   email: string;
   role: 'administrador' | 'tesorero' | 'cobrador';
   category?: {
@@ -15,7 +17,8 @@ export interface User {
 }
 
 export interface CreateUserData {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
   role: 'administrador' | 'tesorero' | 'cobrador';
@@ -23,7 +26,8 @@ export interface CreateUserData {
 }
 
 export interface UpdateUserData {
-  name?: string;
+  firstName?: string;
+  lastName?: string;
   email?: string;
   password?: string;
   role?: 'administrador' | 'tesorero' | 'cobrador';

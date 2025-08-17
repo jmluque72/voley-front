@@ -23,7 +23,8 @@ const Users: React.FC = () => {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState<CreateUserData>({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     role: 'cobrador',
@@ -33,7 +34,11 @@ const Users: React.FC = () => {
   const [validationError, setValidationError] = useState<string>('');
 
   const columns = [
-    { key: 'name', label: 'Nombre' },
+    { 
+      key: 'name', 
+      label: 'Nombre',
+      render: (value: any, user: User) => `${user.firstName} ${user.lastName}`
+    },
     { key: 'email', label: 'Email' },
     { 
       key: 'role', 
@@ -67,13 +72,13 @@ const Users: React.FC = () => {
   ];
 
   const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleAdd = () => {
     setEditingUser(null);
-    setFormData({ name: '', email: '', password: '', role: 'cobrador', categoryId: '' });
+    setFormData({ firstName: '', lastName: '', email: '', password: '', role: 'cobrador', categoryId: '' });
     setValidationError('');
     setIsModalOpen(true);
   };
@@ -81,7 +86,8 @@ const Users: React.FC = () => {
   const handleEdit = (user: User) => {
     setEditingUser(user);
     setFormData({
-      name: user.name,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
       password: '', // No mostrar contraseña al editar
       role: user.role,
@@ -92,7 +98,7 @@ const Users: React.FC = () => {
   };
 
   const handleDelete = async (user: User) => {
-    if (window.confirm(`¿Estás seguro de que quieres eliminar al usuario "${user.name}"?`)) {
+    if (window.confirm(`¿Estás seguro de que quieres eliminar al usuario "${user.firstName} ${user.lastName}"?`)) {
       try {
         await deleteUser(user._id);
       } catch (error: any) {
@@ -108,8 +114,13 @@ const Users: React.FC = () => {
     setValidationError('');
     
     // Validación básica
-    if (!formData.name.trim()) {
+    if (!formData.firstName.trim()) {
       setValidationError('El nombre es obligatorio');
+      return;
+    }
+    
+    if (!formData.lastName.trim()) {
+      setValidationError('El apellido es obligatorio');
       return;
     }
     
@@ -129,7 +140,8 @@ const Users: React.FC = () => {
       if (editingUser) {
         // Editar usuario
         const updateData: UpdateUserData = {
-          name: formData.name,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
           email: formData.email,
           role: formData.role,
           categoryId: formData.categoryId || null
@@ -144,7 +156,8 @@ const Users: React.FC = () => {
       } else {
         // Crear usuario
         const createData: CreateUserData = {
-          name: formData.name,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
           email: formData.email,
           password: formData.password,
           role: formData.role
@@ -159,7 +172,7 @@ const Users: React.FC = () => {
       }
       
       setIsModalOpen(false);
-      setFormData({ name: '', email: '', password: '', role: 'cobrador', categoryId: '' });
+      setFormData({ firstName: '', lastName: '', email: '', password: '', role: 'cobrador', categoryId: '' });
     } catch (error: any) {
       console.error('Error guardando usuario:', error);
       setValidationError(error.message || 'Error al guardar el usuario');
@@ -170,7 +183,7 @@ const Users: React.FC = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setFormData({ name: '', email: '', password: '', role: 'cobrador', categoryId: '' });
+    setFormData({ firstName: '', lastName: '', email: '', password: '', role: 'cobrador', categoryId: '' });
     setEditingUser(null);
     setValidationError('');
   };

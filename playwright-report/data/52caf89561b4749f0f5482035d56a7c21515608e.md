@@ -1,0 +1,121 @@
+# Page snapshot
+
+```yaml
+- heading "Panel de Administración" [level=1]
+- button:
+  - img
+- navigation:
+  - link "Usuarios":
+    - /url: /users
+    - img
+    - text: Usuarios
+  - link "Categorías":
+    - /url: /categories
+    - img
+    - text: Categorías
+  - link "Jugadores":
+    - /url: /players
+    - img
+    - text: Jugadores
+  - link "Grupos Familiares":
+    - /url: /families
+    - img
+    - text: Grupos Familiares
+  - link "Pagos":
+    - /url: /payments
+    - img
+    - text: Pagos
+  - link "Configuración":
+    - /url: /configuration
+    - img
+    - text: Configuración
+  - link "Asignaciones":
+    - /url: /assignments
+    - img
+    - text: Asignaciones
+  - link "Morosos":
+    - /url: /morosos
+    - img
+    - text: Morosos
+  - link "Reportes":
+    - /url: /reports
+    - img
+    - text: Reportes
+- img
+- paragraph: Administrador
+- paragraph: admin@voley.com
+- button "Cerrar Sesión":
+  - img
+- banner:
+  - button:
+    - img
+  - heading "Usuarios" [level=2]
+  - button:
+    - img
+  - button:
+    - img
+    - img
+  - img
+  - textbox "Buscar..."
+- main:
+  - heading "Usuarios" [level=1]
+  - button "Agregar Usuario":
+    - img
+    - text: Agregar Usuario
+  - img
+  - textbox "Buscar..."
+  - table:
+    - rowgroup:
+      - row "Nombre Email Rol Categoría Fecha de Creación Acciones":
+        - cell "Nombre"
+        - cell "Email"
+        - cell "Rol"
+        - cell "Categoría"
+        - cell "Fecha de Creación"
+        - cell "Acciones"
+    - rowgroup:
+      - row "Admin admin@db.com Administrador Sin categoría 3/8/2025":
+        - cell "Admin"
+        - cell "admin@db.com"
+        - cell "Administrador"
+        - cell "Sin categoría"
+        - cell "3/8/2025"
+        - cell:
+          - button:
+            - img
+          - button:
+            - img
+      - row "Administrador admin@voley.com Administrador Sin categoría 3/8/2025":
+        - cell "Administrador"
+        - cell "admin@voley.com"
+        - cell "Administrador"
+        - cell "Sin categoría"
+        - cell "3/8/2025"
+        - cell:
+          - button:
+            - img
+          - button:
+            - img
+      - row "Invalid Date tesorero@voley.com Tesorero Sin categoría 3/8/2025":
+        - cell "Invalid Date"
+        - cell "tesorero@voley.com"
+        - cell "Tesorero"
+        - cell "Sin categoría"
+        - cell "3/8/2025"
+        - cell:
+          - button:
+            - img
+          - button:
+            - img
+      - row "Cobrador cobrador@voley.com Cobrador Sin categoría 3/8/2025":
+        - cell "Cobrador"
+        - cell "cobrador@voley.com"
+        - cell "Cobrador"
+        - cell "Sin categoría"
+        - cell "3/8/2025"
+        - cell:
+          - button:
+            - img
+          - button:
+            - img
+```

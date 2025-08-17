@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VolleyApp - Sistema de Gestión de Voleibol</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .hero-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .download-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <span class="text-3xl mr-2">🏐</span>
+                        <span class="text-xl font-bold text-gray-900">VolleyApp</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="#features" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Características</a>
+                    <a href="http://localhost:5174/login" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Backoffice</a>
+                    <a href="#download" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">Descargar APK</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="gradient-bg hero-pattern min-h-screen flex items-center justify-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-black opacity-10"></div>
+        <div class="relative z-10 text-center text-white px-4 sm:px-6 lg:px-8">
+            <div class="max-w-4xl mx-auto">
+                <h1 class="text-5xl md:text-7xl font-bold mb-6">
+                    Sistema de Gestión de Voleibol
+                </h1>
+                <p class="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto">
+                    Gestiona jugadores, categorías, pagos y cobranzas de manera eficiente y profesional
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="#download" class="download-btn text-white px-8 py-4 rounded-lg text-lg font-semibold inline-flex items-center">
+                        <i class="fas fa-download mr-2"></i>
+                        Descargar APK
+                    </a>
+                    <a href="#demo" class="bg-white text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition-colors inline-flex items-center">
+                        <i class="fas fa-play mr-2"></i>
+                        Ver Demo
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="absolute bottom-0 left-0 right-0">
+            <svg viewBox="0 0 1200 120" preserveAspectRatio="none" class="w-full h-20">
+                <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" fill="#ffffff"></path>
+                <path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" fill="#ffffff"></path>
+                <path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="#ffffff"></path>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">
+                    Características Principales
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    VolleyApp es una solución completa para la gestión de clubes de voleibol
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Gestión de Jugadores -->
+                <div class="feature-card bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+                    <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-users text-2xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Gestión de Jugadores</h3>
+                    <p class="text-gray-600">
+                        Administra jugadores por categorías, con información completa y búsqueda avanzada.
+                    </p>
+                </div>
+
+                <!-- Sistema de Pagos -->
+                <div class="feature-card bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+                    <div class="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-credit-card text-2xl text-green-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Sistema de Pagos</h3>
+                    <p class="text-gray-600">
+                        Control de cuotas, pagos y recibos con generación automática de PDF.
+                    </p>
+                </div>
+
+                <!-- Cobranzas -->
+                <div class="feature-card bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+                    <div class="w-16 h-16 bg-orange-100 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-chart-line text-2xl text-orange-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Cobranzas</h3>
+                    <p class="text-gray-600">
+                        Seguimiento de morosos, reportes y gestión de cobradores por categoría.
+                    </p>
+                </div>
+
+                <!-- Grupos Familiares -->
+                <div class="feature-card bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+                    <div class="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-home text-2xl text-purple-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Grupos Familiares</h3>
+                    <p class="text-gray-600">
+                        Gestión de familias con descuentos automáticos y asignación de jugadores.
+                    </p>
+                </div>
+
+                <!-- Reportes -->
+                <div class="feature-card bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+                    <div class="w-16 h-16 bg-red-100 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-chart-bar text-2xl text-red-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Reportes</h3>
+                    <p class="text-gray-600">
+                        Estadísticas detalladas, gráficos y reportes de ingresos por categoría.
+                    </p>
+                </div>
+
+                <!-- App Móvil -->
+                <div class="feature-card bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+                    <div class="w-16 h-16 bg-indigo-100 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-mobile-alt text-2xl text-indigo-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">App Móvil</h3>
+                    <p class="text-gray-600">
+                        Aplicación móvil para cobradores con interfaz optimizada y sincronización en tiempo real.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Video Demo Section -->
+    <section id="demo" class="py-20 bg-gray-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">
+                    Demo del Sistema
+                </h2>
+                <p class="text-xl text-gray-600">
+                    Conoce cómo funciona VolleyApp en acción
+                </p>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                <div class="video-container rounded-lg overflow-hidden">
+                    <!-- Placeholder para el video -->
+                    <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                        <div class="text-center">
+                            <i class="fas fa-video text-6xl text-gray-400 mb-4"></i>
+                            <p class="text-xl text-gray-600">Video demo próximamente</p>
+                            <p class="text-gray-500 mt-2">Aquí se mostrará un video explicativo del sistema</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section id="download" class="py-20 bg-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-4xl font-bold text-gray-900 mb-4">
+                Descarga la App Móvil
+            </h2>
+            <p class="text-xl text-gray-600 mb-8">
+                Accede a todas las funcionalidades desde tu dispositivo móvil
+            </p>
+            
+            <div class="bg-gray-50 rounded-xl p-8 mb-8">
+                <div class="flex items-center justify-center mb-6">
+                    <span class="text-6xl mr-4">🏐</span>
+                    <div class="text-left">
+                        <h3 class="text-2xl font-bold text-gray-900">VolleyApp Mobile</h3>
+                        <p class="text-gray-600">Versión 1.0</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="text-left">
+                        <h4 class="font-semibold text-gray-900 mb-2">Características:</h4>
+                        <ul class="text-gray-600 space-y-1">
+                            <li>• Interfaz optimizada para móviles</li>
+                            <li>• Gestión de cobranzas por categoría</li>
+                            <li>• Creación de pagos en tiempo real</li>
+                            <li>• Visualización de recibos</li>
+                            <li>• Reportes y estadísticas</li>
+                        </ul>
+                    </div>
+                    <div class="text-left">
+                        <h4 class="font-semibold text-gray-900 mb-2">Requisitos:</h4>
+                        <ul class="text-gray-600 space-y-1">
+                            <li>• Android 6.0 o superior</li>
+                            <li>• Conexión a internet</li>
+                            <li>• Cuenta de cobrador activa</li>
+                            <li>• Permisos de almacenamiento</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <a href="#" class="download-btn text-white px-8 py-4 rounded-lg text-lg font-semibold inline-flex items-center">
+                    <i class="fas fa-download mr-2"></i>
+                    Descargar APK (v1.0)
+                </a>
+            </div>
+            
+            <div class="text-sm text-gray-500">
+                <p>Al descargar, aceptas los términos y condiciones de uso</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <span class="text-2xl mr-2">🏐</span>
+                        <span class="text-xl font-bold">VolleyApp</span>
+                    </div>
+                    <p class="text-gray-400">
+                        Sistema integral de gestión para clubes de voleibol
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Funcionalidades</h3>
+                    <ul class="text-gray-400 space-y-2">
+                        <li>• Gestión de Jugadores</li>
+                        <li>• Sistema de Pagos</li>
+                        <li>• Cobranzas</li>
+                        <li>• Reportes</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contacto</h3>
+                    <p class="text-gray-400">
+                        Para soporte técnico o consultas sobre el sistema
+                    </p>
+                    <p class="text-gray-400 mt-2">
+                        Email: soporte@volleyapp.com
+                    </p>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center">
+                <p class="text-gray-400">
+                    © 2024 VolleyApp. Todos los derechos reservados.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add scroll effect to navigation
+        window.addEventListener('scroll', function() {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 100) {
+                nav.classList.add('bg-white/95', 'backdrop-blur-sm');
+            } else {
+                nav.classList.remove('bg-white/95', 'backdrop-blur-sm');
+            }
+        });
+    </script>
+</body>
+</html>
