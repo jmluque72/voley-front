@@ -24,6 +24,23 @@ interface DebtorData {
   monthsSinceLastPayment: number | null;
 }
 
+// Nueva interfaz para las filas detalladas
+interface DebtorRow {
+  playerId: string;
+  playerName: string;
+  playerEmail: string;
+  category: string;
+  categoryQuota: number;
+  month: number;
+  year: number;
+  monthName: string;
+  amount: number;
+  totalOwed: number;
+  lastPaymentDate: string | null;
+  lastPaymentMonth: string | null;
+  monthsSinceLastPayment: number | null;
+}
+
 const Morosos: React.FC = () => {
   const { debtors, summary, loading, error, refreshDebtors } = useDebtors();
   const [showFilters, setShowFilters] = useState(false);
@@ -33,6 +50,7 @@ const Morosos: React.FC = () => {
   const [filterYear, setFilterYear] = useState<number | ''>('');
   const [refreshing, setRefreshing] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [viewMode, setViewMode] = useState<'summary' | 'detailed'>('detailed');
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -43,18 +61,40 @@ const Morosos: React.FC = () => {
     console.log('✅ Debtors data refreshed');
   };
 
-  const filteredDebtors = debtors.filter(debtor => {
-    if (filterCategory && debtor.category !== filterCategory) return false;
-    if (debtor.unpaidMonthsCount < filterMinMonths) return false;
-    
-    // Filtro por mes específico
-    if (filterMonth && !debtor.unpaidMonths.some(month => month.month === filterMonth)) return false;
-    
-    // Filtro por año específico
-    if (filterYear && !debtor.unpaidMonths.some(month => month.year === filterYear)) return false;
-    
+  // Convertir datos agrupados a filas detalladas
+  const detailedRows: DebtorRow[] = debtors.flatMap(debtor => 
+    debtor.unpaidMonths.map(month => ({
+      playerId: debtor.playerId,
+      playerName: debtor.playerName,
+      playerEmail: debtor.playerEmail,
+      category: debtor.category,
+      categoryQuota: debtor.categoryQuota,
+      month: month.month,
+      year: month.year,
+      monthName: month.monthName,
+      amount: month.amount,
+      totalOwed: debtor.totalOwed,
+      lastPaymentDate: debtor.lastPaymentDate,
+      lastPaymentMonth: debtor.lastPaymentMonth,
+      monthsSinceLastPayment: debtor.monthsSinceLastPayment
+    }))
+  );
+
+  const filteredDetailedRows = detailedRows.filter(row => {
+    if (filterCategory && row.category !== filterCategory) return false;
+    if (filterMonth && row.month !== filterMonth) return false;
+    if (filterYear && row.year !== filterYear) return false;
     return true;
   });
+
+  // Filtrar jugadores que cumplan con el mínimo de meses
+  const playersWithMinMonths = debtors.filter(debtor => 
+    debtor.unpaidMonthsCount >= filterMinMonths
+  );
+
+  const finalFilteredRows = filteredDetailedRows.filter(row => 
+    playersWithMinMonths.some(player => player.playerId === row.playerId)
+  );
 
   const clearFilters = () => {
     setFilterCategory('');
@@ -72,10 +112,11 @@ const Morosos: React.FC = () => {
         category: filterCategory || undefined,
         minMonths: filterMinMonths > 1 ? filterMinMonths : undefined,
         month: filterMonth || undefined,
-        year: filterYear || undefined
+        year: filterYear || undefined,
+        detailed: true
       };
       
-      await exportService.exportDebtorsToExcel(filteredDebtors, exportOptions, summary || undefined);
+      await exportService.exportDebtorsToExcel(finalFilteredRows, exportOptions, summary || undefined);
       
       console.log('✅ Exportación completada exitosamente');
     } catch (error) {
@@ -94,11 +135,11 @@ const Morosos: React.FC = () => {
     return months[month - 1] || '';
   };
 
-  const renderCellValue = (column: any, debtor: DebtorData) => {
+  const renderCellValue = (column: any, row: DebtorRow) => {
     if (column.render) {
-      return column.render(debtor[column.key as keyof DebtorData], debtor);
+      return column.render(row[column.key as keyof DebtorRow], row);
     }
-    const value = debtor[column.key as keyof DebtorData];
+    const value = row[column.key as keyof DebtorRow];
     if (value === null || value === undefined) return '';
     if (typeof value === 'object') return '';
     return String(value);
@@ -137,7 +178,7 @@ const Morosos: React.FC = () => {
     {
       key: 'playerName',
       label: 'Jugador',
-      render: (value: string, row: DebtorData) => (
+      render: (value: string, row: DebtorRow) => (
         <div>
           <div className="font-medium text-gray-900">{value}</div>
           <div className="text-sm text-gray-500">{row.playerEmail}</div>
@@ -154,15 +195,21 @@ const Morosos: React.FC = () => {
       )
     },
     {
-      key: 'unpaidMonthsCount',
-      label: 'Meses Sin Pagar',
+      key: 'monthName',
+      label: 'Mes',
+      render: (value: string, row: DebtorRow) => (
+        <div>
+          <div className="font-medium text-gray-900">{value}</div>
+          <div className="text-sm text-gray-500">{row.year}</div>
+        </div>
+      )
+    },
+    {
+      key: 'amount',
+      label: 'Monto del Mes',
       render: (value: number) => (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          value >= 6 ? 'bg-red-100 text-red-800' :
-          value >= 3 ? 'bg-yellow-100 text-yellow-800' :
-          'bg-orange-100 text-orange-800'
-        }`}>
-          {value} {value === 1 ? 'mes' : 'meses'}
+        <span className="font-medium text-gray-900">
+          ${value.toLocaleString()}
         </span>
       )
     },
@@ -185,24 +232,16 @@ const Morosos: React.FC = () => {
       )
     },
     {
-      key: 'unpaidMonths',
+      key: 'monthsSinceLastPayment',
       label: 'Meses Sin Pagar',
-      render: (value: DebtorMonth[]) => (
-        <div className="flex flex-wrap gap-1">
-          {value.slice(0, 3).map((month, index) => (
-            <span
-              key={index}
-              className="inline-flex items-center px-2 py-1 rounded text-xs bg-red-50 text-red-700 border border-red-200"
-            >
-              {month.monthName}
-            </span>
-          ))}
-          {value.length > 3 && (
-            <span className="inline-flex items-center px-2 py-1 rounded text-xs bg-gray-100 text-gray-600">
-              +{value.length - 3} más
-            </span>
-          )}
-        </div>
+      render: (value: number | null) => (
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+          value && value >= 6 ? 'bg-red-100 text-red-800' :
+          value && value >= 3 ? 'bg-yellow-100 text-yellow-800' :
+          'bg-orange-100 text-orange-800'
+        }`}>
+          {value || 0} {value === 1 ? 'mes' : 'meses'}
+        </span>
       )
     }
   ];
@@ -216,15 +255,15 @@ const Morosos: React.FC = () => {
             <AlertTriangle className="w-6 h-6 text-red-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Usuarios Morosos</h1>
-            <p className="text-gray-600">Jugadores con pagos pendientes del año actual</p>
+            <h1 className="text-2xl font-bold text-gray-900">Informe de Morosos</h1>
+            <p className="text-gray-600">Detalle mensual de pagos pendientes por jugador</p>
           </div>
         </div>
         
         <div className="flex items-center space-x-3">
           <button
             onClick={handleExportToExcel}
-            disabled={exporting || filteredDebtors.length === 0}
+            disabled={exporting || finalFilteredRows.length === 0}
             className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
           >
             <Download className={`w-4 h-4 ${exporting ? 'animate-spin' : ''}`} />
@@ -283,8 +322,8 @@ const Morosos: React.FC = () => {
                 <Calendar className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Promedio Meses</p>
-                <p className="text-2xl font-bold text-gray-900">{summary.averageMonthsUnpaid.toFixed(1)}</p>
+                <p className="text-sm text-gray-600">Registros</p>
+                <p className="text-2xl font-bold text-gray-900">{finalFilteredRows.length}</p>
               </div>
             </div>
           </div>
@@ -316,7 +355,7 @@ const Morosos: React.FC = () => {
             </button>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Categoría
@@ -411,7 +450,7 @@ const Morosos: React.FC = () => {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="p-6 border-b border-gray-200">
           <h2 className="text-lg font-medium text-gray-900">
-            Lista de Deudores ({filteredDebtors.length})
+            Detalle Mensual de Morosos ({finalFilteredRows.length} registros)
           </h2>
           {summary && (
             <p className="text-sm text-gray-600 mt-1">
@@ -459,11 +498,11 @@ const Morosos: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredDebtors.map((debtor, index) => (
-                <tr key={debtor.playerId} className="hover:bg-gray-50">
+              {finalFilteredRows.map((row, index) => (
+                <tr key={`${row.playerId}-${row.month}-${row.year}`} className="hover:bg-gray-50">
                   {columns.map((column) => (
                     <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {renderCellValue(column, debtor)}
+                      {renderCellValue(column, row)}
                     </td>
                   ))}
                 </tr>
@@ -471,9 +510,9 @@ const Morosos: React.FC = () => {
             </tbody>
           </table>
           
-          {filteredDebtors.length === 0 && (
+          {finalFilteredRows.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-gray-500">No se encontraron usuarios morosos</p>
+              <p className="text-gray-500">No se encontraron registros de morosos</p>
             </div>
           )}
         </div>

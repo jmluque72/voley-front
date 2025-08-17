@@ -25,6 +25,23 @@ export interface ExportOptions {
   year?: number;
   category?: string;
   minMonths?: number;
+  detailed?: boolean;
+}
+
+export interface DetailedDebtorRow {
+  playerId: string;
+  playerName: string;
+  playerEmail: string;
+  category: string;
+  categoryQuota: number;
+  month: number;
+  year: number;
+  monthName: string;
+  amount: number;
+  totalOwed: number;
+  lastPaymentDate: string | null;
+  lastPaymentMonth: string | null;
+  monthsSinceLastPayment: number | null;
 }
 
 class ExportService {
@@ -32,7 +49,7 @@ class ExportService {
    * Exporta la lista de deudores a Excel
    */
   exportDebtorsToExcel(
-    debtors: ExportDebtorData[], 
+    debtors: ExportDebtorData[] | DetailedDebtorRow[], 
     options: ExportOptions = {},
     summary?: {
       totalDebtors: number;
@@ -49,40 +66,78 @@ class ExportService {
       // Crear el libro de trabajo
       const workbook = XLSX.utils.book_new();
 
-      // Preparar datos para la hoja principal
-      const mainData = debtors.map(debtor => ({
-        'ID Jugador': debtor.playerId,
-        'Nombre': debtor.playerName,
-        'Email': debtor.playerEmail,
-        'Categoría': debtor.category,
-        'Cuota Mensual': debtor.categoryQuota,
-        'Meses Sin Pagar': debtor.unpaidMonthsCount,
-        'Total Adeudado': debtor.totalOwed,
-        'Último Pago': debtor.lastPaymentMonth || 'Nunca',
-        'Meses Desde Último Pago': debtor.monthsSinceLastPayment || 'N/A',
-        'Meses Sin Pagar (Detalle)': debtor.unpaidMonths.map(m => m.monthName).join(', ')
-      }));
+      // Verificar si son datos detallados o agrupados
+      const isDetailed = options.detailed && debtors.length > 0 && 'month' in debtors[0];
+
+      let mainData;
+      if (isDetailed) {
+        // Datos detallados (una fila por mes)
+        mainData = (debtors as DetailedDebtorRow[]).map(row => ({
+          'ID Jugador': row.playerId,
+          'Nombre': row.playerName,
+          'Email': row.playerEmail,
+          'Categoría': row.category,
+          'Cuota Mensual': row.categoryQuota,
+          'Mes': row.monthName,
+          'Año': row.year,
+          'Monto del Mes': row.amount,
+          'Total Adeudado': row.totalOwed,
+          'Último Pago': row.lastPaymentMonth || 'Nunca',
+          'Meses Desde Último Pago': row.monthsSinceLastPayment || 'N/A'
+        }));
+      } else {
+        // Datos agrupados (una fila por jugador)
+        mainData = (debtors as ExportDebtorData[]).map(debtor => ({
+          'ID Jugador': debtor.playerId,
+          'Nombre': debtor.playerName,
+          'Email': debtor.playerEmail,
+          'Categoría': debtor.category,
+          'Cuota Mensual': debtor.categoryQuota,
+          'Meses Sin Pagar': debtor.unpaidMonthsCount,
+          'Total Adeudado': debtor.totalOwed,
+          'Último Pago': debtor.lastPaymentMonth || 'Nunca',
+          'Meses Desde Último Pago': debtor.monthsSinceLastPayment || 'N/A',
+          'Meses Sin Pagar (Detalle)': debtor.unpaidMonths.map(m => m.monthName).join(', ')
+        }));
+      }
 
       // Crear hoja principal
       const mainWorksheet = XLSX.utils.json_to_sheet(mainData);
 
-      // Ajustar ancho de columnas
-      const columnWidths = [
-        { wch: 15 }, // ID Jugador
-        { wch: 25 }, // Nombre
-        { wch: 30 }, // Email
-        { wch: 20 }, // Categoría
-        { wch: 15 }, // Cuota Mensual
-        { wch: 15 }, // Meses Sin Pagar
-        { wch: 15 }, // Total Adeudado
-        { wch: 15 }, // Último Pago
-        { wch: 20 }, // Meses Desde Último Pago
-        { wch: 50 }  // Meses Sin Pagar (Detalle)
-      ];
+      // Ajustar ancho de columnas según el tipo de datos
+      let columnWidths;
+      if (isDetailed) {
+        columnWidths = [
+          { wch: 15 }, // ID Jugador
+          { wch: 25 }, // Nombre
+          { wch: 30 }, // Email
+          { wch: 20 }, // Categoría
+          { wch: 15 }, // Cuota Mensual
+          { wch: 15 }, // Mes
+          { wch: 10 }, // Año
+          { wch: 15 }, // Monto del Mes
+          { wch: 15 }, // Total Adeudado
+          { wch: 15 }, // Último Pago
+          { wch: 20 }  // Meses Desde Último Pago
+        ];
+      } else {
+        columnWidths = [
+          { wch: 15 }, // ID Jugador
+          { wch: 25 }, // Nombre
+          { wch: 30 }, // Email
+          { wch: 20 }, // Categoría
+          { wch: 15 }, // Cuota Mensual
+          { wch: 15 }, // Meses Sin Pagar
+          { wch: 15 }, // Total Adeudado
+          { wch: 15 }, // Último Pago
+          { wch: 20 }, // Meses Desde Último Pago
+          { wch: 50 }  // Meses Sin Pagar (Detalle)
+        ];
+      }
       mainWorksheet['!cols'] = columnWidths;
 
       // Agregar hoja principal al libro
-      XLSX.utils.book_append_sheet(workbook, mainWorksheet, 'Deudores');
+      XLSX.utils.book_append_sheet(workbook, mainWorksheet, isDetailed ? 'Detalle Mensual' : 'Deudores');
 
       // Crear hoja de resumen si hay datos de summary
       if (summary) {
@@ -102,34 +157,36 @@ class ExportService {
         XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Resumen');
       }
 
-      // Crear hoja detallada de meses sin pagar
-      const detailedData = [];
-      debtors.forEach(debtor => {
-        debtor.unpaidMonths.forEach(month => {
-          detailedData.push({
-            'ID Jugador': debtor.playerId,
-            'Nombre': debtor.playerName,
-            'Email': debtor.playerEmail,
-            'Categoría': debtor.category,
-            'Mes': month.monthName,
-            'Año': month.year,
-            'Monto Adeudado': month.amount
+      // Crear hoja detallada de meses sin pagar solo si no son datos detallados
+      if (!isDetailed) {
+        const detailedData = [];
+        (debtors as ExportDebtorData[]).forEach(debtor => {
+          debtor.unpaidMonths.forEach(month => {
+            detailedData.push({
+              'ID Jugador': debtor.playerId,
+              'Nombre': debtor.playerName,
+              'Email': debtor.playerEmail,
+              'Categoría': debtor.category,
+              'Mes': month.monthName,
+              'Año': month.year,
+              'Monto Adeudado': month.amount
+            });
           });
         });
-      });
 
-      if (detailedData.length > 0) {
-        const detailedWorksheet = XLSX.utils.json_to_sheet(detailedData);
-        detailedWorksheet['!cols'] = [
-          { wch: 15 }, // ID Jugador
-          { wch: 25 }, // Nombre
-          { wch: 30 }, // Email
-          { wch: 20 }, // Categoría
-          { wch: 15 }, // Mes
-          { wch: 10 }, // Año
-          { wch: 15 }  // Monto Adeudado
-        ];
-        XLSX.utils.book_append_sheet(workbook, detailedWorksheet, 'Detalle por Mes');
+        if (detailedData.length > 0) {
+          const detailedWorksheet = XLSX.utils.json_to_sheet(detailedData);
+          detailedWorksheet['!cols'] = [
+            { wch: 15 }, // ID Jugador
+            { wch: 25 }, // Nombre
+            { wch: 30 }, // Email
+            { wch: 20 }, // Categoría
+            { wch: 15 }, // Mes
+            { wch: 10 }, // Año
+            { wch: 15 }  // Monto Adeudado
+          ];
+          XLSX.utils.book_append_sheet(workbook, detailedWorksheet, 'Detalle por Mes');
+        }
       }
 
       // Generar nombre del archivo
