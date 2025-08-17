@@ -241,21 +241,40 @@ const Users: React.FC = () => {
             </div>
           )}
           
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Nombre *
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => {
-                setFormData({ ...formData, name: e.target.value });
-                if (validationError) setValidationError('');
-              }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              required
-              disabled={submitting}
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Nombre *
+              </label>
+              <input
+                type="text"
+                value={formData.firstName}
+                onChange={(e) => {
+                  setFormData({ ...formData, firstName: e.target.value });
+                  if (validationError) setValidationError('');
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                required
+                disabled={submitting}
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Apellido *
+              </label>
+              <input
+                type="text"
+                value={formData.lastName}
+                onChange={(e) => {
+                  setFormData({ ...formData, lastName: e.target.value });
+                  if (validationError) setValidationError('');
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                required
+                disabled={submitting}
+              />
+            </div>
           </div>
           
           <div>
